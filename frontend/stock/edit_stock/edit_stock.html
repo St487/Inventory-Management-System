@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Stock</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <div class="header-row">
+
+        <a href="#" class="btn-back" onclick="loadPage('stock/stock.html'); return false;">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+
+        <div class="page-header">
+            <h2><i class="fa fa-edit"></i> Edit Stock</h2>
+            <p>Update stock information</p>
+        </div>
+
+    </div>
+
+    <div class="form-card">
+
+        <form>
+
+            <input type="hidden" id="stock_id">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Stock Code</label>
+                    <input type="text" id="stock_code">
+                </div>
+
+                <div class="form-group">
+                    <label>Stock Name</label>
+                    <input type="text" id="stock_name">
+                </div>
+
+                <div class="form-group">
+                    <label>Price (RM)</label>
+                    <input type="number" id="stock_price">
+                </div>
+
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="stock_quantity">
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <select id="stock_supplier">
+                        <option>Tech Supply Co</option>
+                        <option>Office Pro</option>
+                        <option>Global Electronics</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Thumbnail</label>
+                    <input type="file" id="stock_thumbnail" accept="image/*">
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <button type="button" class="btn-save" onclick="updateStock()">
+                    <i class="fa fa-save"></i> Update Stock
+                </button>
+
+                <button type="button" class="btn-delete" onclick="deleteStock()">
+                    <i class="fa fa-trash"></i> Delete Stock
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

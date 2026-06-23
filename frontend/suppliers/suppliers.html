@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Suppliers</title>
+
+    <link rel="stylesheet" href="suppliers/suppliers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body onload="loadSuppliers()">
+
+<div class="supplier-container">
+
+    <!-- TOP ROW -->
+    <div class="action-top-row">
+
+        <h5 class="header-title-block">
+            <span class="title">Create A New Supplier</span>
+        </h5>
+
+        <button class="btn-primary add_supplier-btn" onclick="loadPage('suppliers/add_suppliers/add_supplier.html')">
+            <i class="fa fa-plus"></i> Add Supplier
+        </button>
+
+    </div>
+
+    <!-- SEARCH ROW -->
+    <div class="header-action-row">
+
+        <div class="search-and-create-bar">
+
+            <div class="search-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="searchInput"
+                       onkeyup="searchSupplier()"
+                       placeholder="Search supplier name, email...">
+            </div>
+
+            <button class="btn-secondary" onclick="clearSearch()">
+                Clear
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+
+        <table class="modern-data-table">
+
+            <thead>
+                <tr>
+                    <th>Logo</th>
+                    <th>Supplier ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+
+            <tbody id="supplierTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

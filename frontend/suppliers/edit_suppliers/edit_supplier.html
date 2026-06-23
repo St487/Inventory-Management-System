@@ -1,0 +1,70 @@
+<div class="page-container">
+
+    <div class="header-row">
+
+        <a href="#" class="btn-back" onclick="loadPage('suppliers/suppliers.html'); return false;">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+
+        <div class="page-header">
+            <h2><i class="fa fa-edit"></i> Edit Supplier</h2>
+            <p>Update supplier information</p>
+        </div>
+
+    </div>
+
+    <div class="form-card">
+
+        <form>
+
+            <input type="hidden" id="supplier_id">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Supplier Name</label>
+                    <input type="text" id="supplier_name">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="supplier_email">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="supplier_phone">
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier Logo</label>
+                    <input type="file" id="supplier_logo" accept="image/*">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Address</label>
+                    <textarea id="supplier_address" rows="4"></textarea>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <button type="button" class="btn-save" onclick="updateSupplier()">
+                    <i class="fa fa-save"></i> Update Supplier
+                </button>
+
+                <button type="button" class="btn-delete" onclick="deleteSupplier()">
+                    <i class="fa fa-trash"></i> Delete Supplier
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

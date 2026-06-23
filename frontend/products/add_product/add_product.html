@@ -1,0 +1,98 @@
+<div class="page-container">
+
+    <div class="header-row">
+
+        <a href="#" class="btn-back" onclick="loadPage('products/products.html'); return false;">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <h2><i class="fa fa-box"></i> Add New Product</h2>
+            <p>Fill in the details below to create a new product</p>
+        </div>
+
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+
+        <form>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Product Code</label>
+                    <input type="text" placeholder="e.g. P001">
+                </div>
+
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" placeholder="e.g. Wireless Mouse">
+                </div>
+
+                <div class="form-group">
+                    <label>Price (RM)</label>
+                    <input type="number" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Sell Quantity</label>
+                    <input type="number" placeholder="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <select>
+                        <option>Select Supplier</option>
+                        <option>Supplier A</option>
+                        <option>Supplier B</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Stock</label>
+                    <select>
+                        <option>Select Stock</option>
+                        <option>Stock A</option>
+                        <option>Stock B</option>
+                        <option>Stock C</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Product Image</label>
+                    <input type="file" accept="image/*">
+                </div>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="form-actions">
+
+                <button type="button" class="btn-save" onclick="saveProduct()">
+                    <i class="fa fa-save"></i> Save Product
+                </button>
+
+                <button type="reset" class="btn-reset">
+                    Reset
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

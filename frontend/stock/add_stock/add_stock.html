@@ -1,0 +1,78 @@
+<div class="page-container">
+
+    <div class="header-row">
+
+        <a href="#" class="btn-back" onclick="loadPage('stock/stock.html'); return false;">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+
+        <div class="page-header">
+            <h2><i class="fa fa-warehouse"></i> Add New Stock</h2>
+            <p>Fill in the details below to create a new stock record</p>
+        </div>
+
+    </div>
+
+    <div class="form-card">
+
+        <form id="stockForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Stock Code</label>
+                    <input type="text" id="stockCode" placeholder="e.g. ST001">
+                </div>
+
+                <div class="form-group">
+                    <label>Stock Name</label>
+                    <input type="text" id="stockName" placeholder="e.g. Wireless Mouse">
+                </div>
+
+                <div class="form-group">
+                    <label>Price (RM)</label>
+                    <input type="number" id="stockPrice" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="stockQuantity" placeholder="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <select id="stockSupplier">
+                        <option value="">Select Supplier</option>
+                        <option>Tech Supply Co</option>
+                        <option>Office Pro</option>
+                        <option>Global Electronics</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Thumbnail</label>
+                    <input type="file" id="stockThumbnail" accept="image/*">
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+
+                <button type="button" class="btn-save" onclick="saveStock()">
+                    <i class="fa fa-save"></i> Save Stock
+                </button>
+
+                <button type="reset" class="btn-reset">
+                    Reset
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

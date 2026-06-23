@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Management</title>
+
+    <link rel="stylesheet" href="stock/stock.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body onload="loadStocks()">
+
+<div class="stock-container">
+
+    <!-- TOP ROW -->
+    <div class="action-top-row">
+
+        <h5 class="header-title-block">
+            <span class="title">Stock Management</span>
+        </h5>
+
+        <button class="btn-primary add_stock-btn" onclick="loadPage('stock/add_stock/add_stock.html')">
+            <i class="fa fa-plus"></i> Add Stock
+        </button>
+
+    </div>
+
+    <!-- SEARCH / FILTER -->
+    <div class="header-action-row">
+
+        <div class="search-and-create-bar">
+
+            <div class="search-wrapper">
+                <i class="fa fa-search search-icon"></i>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search product..."
+                    onkeyup="applyFilters()">
+            </div>
+
+            <select id="supplierFilter"
+                class="filter-select"
+                onchange="applyFilters()">
+
+                <option value="">All Suppliers</option>
+                <option value="Tech Supply Co">Tech Supply Co</option>
+                <option value="Office Pro">Office Pro</option>
+                <option value="Global Electronics">Global Electronics</option>
+
+            </select>
+
+            <button class="btn-secondary" onclick="clearFilters()">
+                Clear Filter
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+
+        <table class="modern-data-table">
+
+            <thead>
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Price (RM)</th>
+                    <th>Quantity</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="stockTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customers</title>
+    
+    <link rel="stylesheet" href="customers/customers.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body onload="loadCustomers()">
+
+<div class="customer-container">
+
+
+    <!-- FILTER ROW (same structure as products) -->
+    <div class="header-action-row">
+
+        <div class="search-and-create-bar">
+
+            <div class="search-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="searchInput"
+                       onkeyup="searchCustomer()"
+                       placeholder="Search name, email, phone...">
+            </div>
+
+            <select id="vipFilter" onchange="applyFilter()" class="filter-select">
+                <option value="">All VIP status</option>
+                <option value="Gold">Gold</option>
+                <option value="Silver">Silver</option>
+                <option value="Normal">Normal</option>
+            </select>
+
+            <button class="btn-secondary" onclick="clearFilter()">
+                Clear Filter
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE CARD (same as products) -->
+    <div class="table-card">
+
+        <table class="modern-data-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>VIP Status</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+
+            <tbody id="customerTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+
+    <link rel="stylesheet" href="products/products.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body onload="loadProducts()">
+
+<div class="product-container">
+    <!-- RIGHT: ADD BUTTON -->
+    <div class="action-top-row">
+
+        <h5 class="header-title-block">
+            <span class="title">Create A New Product</span>
+        </h5>
+
+        <button class="btn-primary add_product-btn"
+            onclick="loadPage('products/add_product/add_product.html')">
+            <i class="fa fa-plus"></i> Add Product
+        </button>
+
+    </div>
+
+    <!-- FILTER ROW (SECOND ROW) -->
+    <div class="header-action-row">
+
+        <div class="search-and-create-bar">
+
+            <div class="search-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="searchInput"
+                    onkeyup="applyFilters()"
+                    placeholder="Search name, code...">
+            </div>
+
+            <select id="statusFilter" onchange="applyFilters()" class="filter-select">
+                <option value="">All Status</option>
+                <option value="high stock">Stock Available</option>
+                <option value="low stock">Low Stock</option>
+                <option value="out of stock">Out of Stock</option>
+            </select>
+
+            <button class="btn-secondary" onclick="clearFilters()">
+                Clear Filter
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN INTERACTIVE DATA TABLE -->
+    <div class="table-card">
+        <table class="modern-data-table">
+
+            <thead>
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Price (RM)</th>
+                    <th>Quantity</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="productTable"></tbody>
+
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

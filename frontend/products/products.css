@@ -1,0 +1,220 @@
+﻿.product-container {
+    padding: 0;
+    background: transparent;
+}
+
+.action-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.header-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.header-title-block .title {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.header-action-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.search-and-create-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.add_product-btn {
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.18);
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.add_product-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(59, 130, 246, 0.25);
+}
+
+.search-wrapper {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.modern-data-table td:nth-child(4),
+.modern-data-table td:nth-child(5),
+.modern-data-table td:nth-child(6),
+.modern-data-table td:nth-child(7) {
+    text-align: center;
+}
+
+.modern-data-table th:nth-child(4),
+.modern-data-table th:nth-child(5),
+.modern-data-table th:nth-child(6),
+.modern-data-table th:nth-child(7) {
+    text-align: center;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    color: #1e293b;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-wrapper input:focus {
+    background: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+}
+
+.filter-select {
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 0.875rem;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+    background: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.search-and-create-bar {
+    gap: 14px;
+    width: 100%;
+}
+
+.btn-secondary {
+    margin-left: auto;
+}
+
+/* MODERN METRIC BADGES STATUS */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;                  /* Gap between indicator dot and text */
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 30px;       /* Fully pill-shaped */
+    width: fit-content;
+}
+
+/* Modern Active Status Component */
+.status-badge.active {
+    background: #e6f4ea;       /* Ultra-soft aesthetic green background */
+    color: #137333;            /* High contrast dark emerald text */
+}
+
+/* Add a breathing pulse or simple live dot for Active */
+.status-badge.active::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #1edd61;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Modern Inactive Status Component */
+.status-badge.inactive {
+    background: #f1f5f9;       /* Muted ash/slate background */
+    color: #475569;            /* Deep slate grey text */
+}
+
+.status-badge.inactive::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    display: inline-block;
+}
