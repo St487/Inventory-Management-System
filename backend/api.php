@@ -8,8 +8,13 @@ $data = input();
 try {
     switch ($action) {
         case 'list_suppliers': listSuppliers(); break;
+        case 'list_suppliers_dropdown': listSuppliersDropdown(); break;
         case 'get_supplier': getSupplier(); break;
         case 'save_supplier': saveSupplier($data); break;
+        case 'save_stock': saveStock($data); break;
+        case 'list_stock': listStock(); break;
+        case 'list_stock_dropdown': listStockDropdown(); break;
+        case 'get_stock': getStock(); break;
         case 'delete_supplier': deleteSupplier($data); break;
         case 'list_products': listProducts(); break;
         case 'get_product': getProduct(); break;
@@ -63,6 +68,20 @@ function listSuppliers()
     ok(['suppliers' => $stmt->fetchAll()]);
 }
 
+function listSuppliersDropdown()
+{
+    $stmt = pdo()->prepare("
+        SELECT supplier_id, name 
+        FROM suppliers 
+        ORDER BY name ASC
+    ");
+    $stmt->execute();
+
+    ok([
+        'suppliers' => $stmt->fetchAll()
+    ]);
+}
+
 function getSupplier()
 {
     $stmt = pdo()->prepare('SELECT * FROM suppliers WHERE supplier_id = :id');
@@ -80,7 +99,7 @@ function saveSupplier($data)
         'email' => trim(isset($data['email']) ? $data['email'] : ''),
         'phone' => trim(isset($data['phone']) ? $data['phone'] : ''),
         'address' => trim(isset($data['address']) ? $data['address'] : ''),
-        'logo_path' => trim(isset($data['logo_path']) && $data['logo_path'] !== '' ? $data['logo_path'] : 'assets/supplier-placeholder.png')
+        'logo_path' => trim(isset($data['logo_path']) && $data['logo_path'] !== '' ? $data['logo_path'] : 'assets/product-placeholder.jpg')
     ];
 
     if ($params['supplier_code'] === '' || $params['name'] === '' || $params['email'] === '') {
@@ -119,20 +138,28 @@ function listProducts()
     $where = 'WHERE (p.product_code LIKE :search OR p.name LIKE :search OR s.name LIKE :search)';
 
     if ($status === 'low') {
-        $where .= ' AND p.quantity > 0 AND p.quantity < 10';
+        $where .= ' AND s.quantity > 0 AND s.quantity < 10';
     } elseif ($status === 'out') {
-        $where .= ' AND p.quantity = 0';
+        $where .= ' AND s.quantity = 0';
     } elseif ($status === 'available') {
-        $where .= ' AND p.quantity >= 10';
+        $where .= ' AND s.quantity >= 10';
     }
 
-    $sql = "SELECT p.*, s.name AS supplier_name
-        FROM products p
-        LEFT JOIN suppliers s ON s.supplier_id = p.supplier_id
-        $where
-        ORDER BY p.product_id DESC";
+    $sql = "SELECT 
+                p.*,
+                s.quantity AS stock_quantity,
+                s.status AS stock_status,
+                s.name AS stock_name,
+                sup.name AS supplier_name
+            FROM products p
+            JOIN stock s ON s.stock_id = p.stock_id
+            LEFT JOIN suppliers sup ON sup.supplier_id = s.supplier_id
+            $where
+            ORDER BY p.product_id DESC";
+
     $stmt = pdo()->prepare($sql);
     $stmt->execute($params);
+
     ok(['products' => $stmt->fetchAll()]);
 }
 
@@ -145,32 +172,294 @@ function getProduct()
     ok(['product' => $product]);
 }
 
+function saveStock($data)
+{
+    $uploadFolder = __DIR__ . '/assets/products/';
+
+    if (!is_dir($uploadFolder)) {
+        mkdir($uploadFolder, 0777, true);
+    }
+
+    $imagePath = null;
+
+    if (isset($_FILES['image_path']) && $_FILES['image_path']['error'] === UPLOAD_ERR_OK) {
+
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+        $fileName = $_FILES['image_path']['name'];
+        $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        if (!in_array($fileExt, $allowedExtensions)) {
+            fail('Only JPG, JPEG, PNG, WEBP allowed.');
+        }
+
+        if ($_FILES['image_path']['size'] > 2 * 1024 * 1024) {
+            fail('Image must not exceed 2MB.');
+        }
+
+        $newFileName = uniqid('stock_', true) . '.' . $fileExt;
+        $targetFile = $uploadFolder . $newFileName;
+
+        if (!move_uploaded_file($_FILES['image_path']['tmp_name'], $targetFile)) {
+            fail('Failed to upload image.');
+        }
+
+        $imagePath = 'assets/products/' . $newFileName;
+    }
+
+    $stockCode = trim($data['stock_code'] ?? '');
+    $name = trim($data['name'] ?? '');
+    $price = floatval($data['price'] ?? 0);
+    $quantity = intval($data['quantity'] ?? 0);
+    $supplierId = intval($data['supplier_id'] ?? 0);
+
+    if ($stockCode === '' || $name === '' || $supplierId <= 0) {
+        fail('Stock code, name and supplier are required.');
+    }
+
+    if ($price < 0 || $quantity < 0) {
+        fail('Invalid price or quantity.');
+    }
+
+    if ($quantity <= 0) {
+        $status = 'Out of Stock';
+    } elseif ($quantity < 10) {
+        $status = 'Low Stock';
+    } else {
+        $status = 'Stock Available';
+    }
+
+    $pdo = pdo();
+
+    if (!empty($data['stock_id'])) {
+
+        // GET existing image first
+        $stmt = $pdo->prepare("SELECT image_path FROM stock WHERE stock_id = :id");
+        $stmt->execute(['id' => $data['stock_id']]);
+        $existing = $stmt->fetch();
+
+        if (!$imagePath) {
+            $imagePath = $existing['image_path']; // KEEP OLD IMAGE
+        }
+
+        $sql = "UPDATE stock SET
+                    stock_code = :stock_code,
+                    name = :name,
+                    price = :price,
+                    quantity = :quantity,
+                    supplier_id = :supplier_id,
+                    image_path = :image_path,
+                    status = :status
+                WHERE stock_id = :stock_id";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'stock_code' => $stockCode,
+            'name' => $name,
+            'price' => $price,
+            'quantity' => $quantity,
+            'supplier_id' => $supplierId,
+            'image_path' => $imagePath,
+            'status' => $status,
+            'stock_id' => intval($data['stock_id'])
+        ]);
+
+        flashMessage('Stock updated successfully.');
+    } else {
+
+        // INSERT
+        $sql = "INSERT INTO stock
+                (stock_code, name, price, quantity, supplier_id, image_path, status)
+                VALUES
+                (:stock_code, :name, :price, :quantity, :supplier_id, :image_path, :status)";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'stock_code' => $stockCode,
+            'name' => $name,
+            'price' => $price,
+            'quantity' => $quantity,
+            'supplier_id' => $supplierId,
+            'image_path' => $imagePath,
+            'status' => $status
+        ]);
+
+        flashMessage('Stock added successfully.');
+    }
+
+    ok();
+}
+
+function listStock()
+{
+    $search = rememberSearch('stock_search');
+
+    $stmt = pdo()->prepare("
+        SELECT 
+            s.stock_id,
+            s.stock_code,
+            s.name,
+            s.price,
+            s.quantity,
+            s.image_path,
+            s.status,
+            sup.name AS supplier_name
+        FROM stock s
+        LEFT JOIN suppliers sup ON sup.supplier_id = s.supplier_id
+        WHERE 
+            s.stock_code LIKE :search 
+            OR s.name LIKE :search
+            OR sup.name LIKE :search
+        ORDER BY s.stock_id DESC
+    ");
+
+    $stmt->execute([
+        'search' => '%' . $search . '%'
+    ]);
+
+    ok([
+        'stocks' => $stmt->fetchAll()
+    ]);
+}
+
+function listStockDropdown()
+{
+    $stmt = pdo()->prepare("
+        SELECT 
+            stock_id,
+            stock_code,
+            quantity,
+            name
+        FROM stock
+        ORDER BY stock_id DESC
+    ");
+
+    $stmt->execute();
+
+    ok([
+        'stocks' => $stmt->fetchAll()
+    ]);
+}
+
+function getStock()
+{
+    $stmt = pdo()->prepare("
+        SELECT s.*, sup.name AS supplier_name
+        FROM stock s
+        LEFT JOIN suppliers sup ON sup.supplier_id = s.supplier_id
+        WHERE s.stock_id = :id
+    ");
+
+    $stmt->execute([
+        'id' => intval($_GET['id'] ?? 0)
+    ]);
+
+    $stock = $stmt->fetch();
+
+    if (!$stock) fail('Stock not found.', 404);
+
+    ok(['stock' => $stock]);
+}
+
 function saveProduct($data)
 {
+
+     $stockId = intval($data['stock_id'] ?? 0);
+
+    // 1. BLOCK DUPLICATE STOCK FIRST
+    if (empty($data['product_id'])) {
+        $stmt = pdo()->prepare("SELECT COUNT(*) FROM products WHERE stock_id = :stock_id");
+        $stmt->execute(['stock_id' => $stockId]);
+
+        if ($stmt->fetchColumn() > 0) {
+            fail('This stock is already assigned to another product.');
+        }
+    }
+
+    // 2. CHECK STOCK EXISTS
+    $stmt = pdo()->prepare("SELECT quantity FROM stock WHERE stock_id = :id");
+    $stmt->execute(['id' => $stockId]);
+    $stock = $stmt->fetch();
+
+    if (!$stock) {
+        fail('Stock not found.');
+    }
+
+    // 3. VALIDATE QUANTITY
+    $productQty = intval($data['quantity'] ?? 0);
+    if ($productQty > $stock['quantity']) {
+        fail("Product quantity cannot exceed stock quantity.");
+    }
+
+    $uploadFolder = __DIR__ . '/assets/products/';
+
+    if (!is_dir($uploadFolder)) {
+        mkdir($uploadFolder, 0777, true);
+    }
+
+    $pdo = pdo();
+
+    $existingImage = null;
+
+    if (!empty($data['product_id'])) {
+        $stmt = $pdo->prepare("SELECT image_path FROM products WHERE product_id = :id");
+        $stmt->execute(['id' => $data['product_id']]);
+        $existing = $stmt->fetch();
+        $existingImage = $existing['image_path'] ?? null;
+    }
+
+    $imagePath = $existingImage ?? 'assets/products/product-placeholder.jpg';
+
+    if (isset($_FILES['image_path']) && $_FILES['image_path']['error'] === UPLOAD_ERR_OK) {
+
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+        $originalFileName = $_FILES['image_path']['name'];
+        $fileExtension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
+
+        if (!in_array($fileExtension, $allowedExtensions)) {
+            fail('Only JPG, JPEG, PNG, and WEBP images are allowed.');
+        }
+
+        if ($_FILES['image_path']['size'] > 2 * 1024 * 1024) {
+            fail('Image size must not exceed 2MB.');
+        }
+
+        $newFileName = uniqid('product_', true) . '.' . $fileExtension;
+
+        $targetFile = $uploadFolder . $newFileName;
+
+        if (!move_uploaded_file($_FILES['image_path']['tmp_name'], $targetFile)) {
+            fail('Failed to upload product image.');
+        }
+
+        $imagePath = 'assets/products/' . $newFileName;
+    }
+
     $params = [
         'product_code' => trim(isset($data['product_code']) ? $data['product_code'] : ''),
         'name' => trim(isset($data['name']) ? $data['name'] : ''),
         'price' => floatval(isset($data['price']) ? $data['price'] : 0),
         'quantity' => intval(isset($data['quantity']) ? $data['quantity'] : 0),
-        'supplier_id' => intval(isset($data['supplier_id']) ? $data['supplier_id'] : 0),
-        'image_path' => trim(isset($data['image_path']) && $data['image_path'] !== '' ? $data['image_path'] : 'assets/product-placeholder.png'),
+        'stock_id' => intval($data['stock_id'] ?? 0),
+        'image_path' => $imagePath,
         'status' => trim(isset($data['status']) ? $data['status'] : 'active')
     ];
 
-    if ($params['product_code'] === '' || $params['name'] === '' || $params['supplier_id'] <= 0) {
-        fail('Product code, name and supplier are required.');
+    if ($params['product_code'] === '' || $params['name'] === '' || $params['stock_id'] <= 0) {
+        fail('Product code, name and stock are required.');
     }
 
     if (!empty($data['product_id'])) {
         $params['product_id'] = intval($data['product_id']);
         $sql = 'UPDATE products SET product_code=:product_code, name=:name, price=:price,
-            quantity=:quantity, supplier_id=:supplier_id, image_path=:image_path, status=:status
+            quantity=:quantity, stock_id=:stock_id, image_path=:image_path, status=:status
             WHERE product_id=:product_id';
         pdo()->prepare($sql)->execute($params);
         flashMessage('Product updated successfully.');
     } else {
-        $sql = 'INSERT INTO products (product_code, name, price, quantity, supplier_id, image_path, status)
-            VALUES (:product_code, :name, :price, :quantity, :supplier_id, :image_path, :status)';
+        $sql = 'INSERT INTO products (product_code, name, price, quantity, stock_id, image_path, status)
+            VALUES (:product_code, :name, :price, :quantity, :stock_id, :image_path, :status)';
         pdo()->prepare($sql)->execute($params);
         flashMessage('Product added successfully.');
     }
@@ -251,10 +540,11 @@ function listOrders()
 function createOrder($data)
 {
     $pdo = pdo();
-    $productId = intval(isset($data['product_id']) ? $data['product_id'] : 0);
-    $quantity = max(1, intval(isset($data['quantity']) ? $data['quantity'] : 1));
-    $customerId = intval(isset($data['customer_id']) ? $data['customer_id'] : 0);
-    $paymentStatus = trim(isset($data['payment_status']) ? $data['payment_status'] : 'Unpaid');
+
+    $productId = intval($data['product_id'] ?? 0);
+    $quantity = max(1, intval($data['quantity'] ?? 1));
+    $customerId = intval($data['customer_id'] ?? 0);
+    $paymentStatus = trim($data['payment_status'] ?? 'Unpaid');
 
     if ($customerId <= 0 || $productId <= 0) {
         fail('Please select customer and product.');
@@ -263,21 +553,40 @@ function createOrder($data)
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare('SELECT * FROM products WHERE product_id = :id FOR UPDATE');
+        // GET PRODUCT + STOCK
+        $stmt = $pdo->prepare("
+            SELECT p.*, s.stock_id, s.quantity AS stock_qty, s.price
+            FROM products p
+            JOIN stock s ON s.stock_id = p.stock_id
+            WHERE p.product_id = :id
+            FOR UPDATE
+        ");
         $stmt->execute(['id' => $productId]);
-        $product = $stmt->fetch();
-        if (!$product) throw new Exception('Product not found.');
-        if (intval($product['quantity']) < $quantity) throw new Exception('Not enough stock for this order.');
+        $dataRow = $stmt->fetch();
 
-        $subtotal = money(floatval($product['price']) * $quantity);
-        $discount = $subtotal > 500 ? money($subtotal * 0.10) : 0.00;
-        $tax = money(($subtotal - $discount) * 0.06);
-        $total = money($subtotal - $discount + $tax);
+        if (!$dataRow) throw new Exception('Product not found.');
+
+        if ($dataRow['stock_qty'] < $quantity) {
+            throw new Exception('Not enough stock.');
+        }
+
+        $price = $dataRow['price'];
+
+        $subtotal = $price * $quantity;
+        $discount = $subtotal > 500 ? $subtotal * 0.10 : 0;
+        $tax = ($subtotal - $discount) * 0.06;
+        $total = $subtotal - $discount + $tax;
+
         $orderNo = 'ORD' . date('YmdHis') . rand(10, 99);
 
-        $stmt = $pdo->prepare('INSERT INTO orders
+        // INSERT ORDER
+        $stmt = $pdo->prepare("
+            INSERT INTO orders 
             (order_no, customer_id, product_id, quantity, subtotal, discount, tax, total, payment_status)
-            VALUES (:order_no, :customer_id, :product_id, :quantity, :subtotal, :discount, :tax, :total, :payment_status)');
+            VALUES 
+            (:order_no, :customer_id, :product_id, :quantity, :subtotal, :discount, :tax, :total, :payment_status)
+        ");
+
         $stmt->execute([
             'order_no' => $orderNo,
             'customer_id' => $customerId,
@@ -290,13 +599,25 @@ function createOrder($data)
             'payment_status' => $paymentStatus
         ]);
 
-        $stmt = $pdo->prepare('UPDATE products SET quantity = quantity - :quantity WHERE product_id = :product_id');
-        $stmt->execute(['quantity' => $quantity, 'product_id' => $productId]);
+        // UPDATE STOCK (NOT PRODUCT)
+        $stmt = $pdo->prepare("
+            UPDATE stock 
+            SET quantity = quantity - :qty 
+            WHERE stock_id = :stock_id
+        ");
+
+        $stmt->execute([
+            'qty' => $quantity,
+            'stock_id' => $dataRow['stock_id']
+        ]);
 
         $pdo->commit();
+
         $_SESSION['last_order_no'] = $orderNo;
-        flashMessage('Order ' . $orderNo . ' created. Total RM ' . number_format($total, 2));
+        flashMessage("Order $orderNo created.");
+
         ok(['order_no' => $orderNo, 'total' => $total]);
+
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
@@ -314,18 +635,26 @@ function deleteOrder($data)
 function dashboard()
 {
     $pdo = pdo();
+
     $summary = [
         'total_products' => intval($pdo->query('SELECT COUNT(*) FROM products')->fetchColumn()),
         'total_customers' => intval($pdo->query('SELECT COUNT(*) FROM customers')->fetchColumn()),
         'total_orders' => intval($pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn()),
-        'total_stock' => intval($pdo->query('SELECT COALESCE(SUM(quantity),0) FROM products')->fetchColumn()),
+        
+        // STOCK is now source of truth
+        'total_stock' => intval($pdo->query('SELECT COALESCE(SUM(quantity),0) FROM stock')->fetchColumn()),
+
         'total_sales' => money(floatval($pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Paid'")->fetchColumn())),
-        'low_stock' => intval($pdo->query('SELECT COUNT(*) FROM products WHERE quantity > 0 AND quantity < 10')->fetchColumn()),
-        'last_order_no' => isset($_SESSION['last_order_no']) ? $_SESSION['last_order_no'] : ''
+
+        'low_stock' => intval($pdo->query('SELECT COUNT(*) FROM stock WHERE quantity > 0 AND quantity < 10')->fetchColumn()),
+
+        'last_order_no' => $_SESSION['last_order_no'] ?? ''
     ];
 
-    $chart = $pdo->query('SELECT name, quantity FROM products ORDER BY quantity ASC LIMIT 8')->fetchAll();
+    $chart = $pdo->query('SELECT name, quantity FROM stock ORDER BY quantity ASC LIMIT 8')->fetchAll();
+
     $recent = $pdo->query('SELECT order_no, total, payment_status, created_at FROM orders ORDER BY order_id DESC LIMIT 5')->fetchAll();
+
     ok(['summary' => $summary, 'chart' => $chart, 'recent' => $recent]);
 }
 
@@ -351,10 +680,17 @@ function payments()
 function analysis()
 {
     $pdo = pdo();
-    $low = $pdo->query('SELECT product_code, name, quantity FROM products WHERE quantity < 10 ORDER BY quantity ASC')->fetchAll();
-    $best = $pdo->query('SELECT p.name, COALESCE(SUM(o.quantity),0) AS sold
-        FROM products p LEFT JOIN orders o ON o.product_id = p.product_id
-        GROUP BY p.product_id, p.name ORDER BY sold DESC LIMIT 5')->fetchAll();
+    $low = $pdo->query('SELECT stock_code, name, quantity FROM stock WHERE quantity < 10 ORDER BY quantity ASC')->fetchAll();
+
+    $best = $pdo->query('
+        SELECT s.name, COALESCE(SUM(o.quantity),0) AS sold
+        FROM stock s
+        JOIN products p ON p.stock_id = s.stock_id
+        LEFT JOIN orders o ON o.product_id = p.product_id
+        GROUP BY s.stock_id, s.name
+        ORDER BY sold DESC
+        LIMIT 5
+    ')->fetchAll();
     $sales = money(floatval($pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Paid'")->fetchColumn()));
     $unpaid = intval($pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='Unpaid'")->fetchColumn());
 

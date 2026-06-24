@@ -13,13 +13,18 @@ async function loadProducts() {
 
         table.innerHTML = products.map(product => `
             <tr onclick="openEditPage(${product.product_id})" class="clickable-row">
-                <td><img src="${escapeHtml(product.image_path)}" alt=""></td>
+                <td>
+                    <img 
+                        src="../backend/${escapeHtml(product.image_path)}"
+                        class="stock-thumbnail"
+                        onerror="this.onerror=null; this.src='../backend/assets/products/product-placeholder.jpg';"
+                    />
+                </td>
                 <td>${escapeHtml(product.product_code)}</td>
                 <td>${escapeHtml(product.name)}</td>
                 <td>RM ${money(product.price)}</td>
                 <td>${product.quantity}</td>
                 <td>${stockBadge(Number(product.quantity))}</td>
-                <td>${escapeHtml(product.supplier_name || '-')}</td>
                 <td><span class="status-badge ${product.status === 'active' ? 'active' : 'inactive'}">${escapeHtml(product.status)}</span></td>
             </tr>
         `).join('');

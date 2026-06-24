@@ -200,3 +200,71 @@
         font-size: 18px;
     }
 }
+
+.stock-thumbnail-preview {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    margin-top: 8px;
+}
+
+/* Container wrapper (optional but recommended) */
+.image-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Thumbnail preview */
+#thumbnail_preview {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: 0.2s ease-in-out;
+}
+
+/* Hover effect */
+#thumbnail_preview:hover {
+    transform: scale(1.05);
+}
+
+/* File input styling */
+#image_path {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: fit-content;
+}
+
+/* Remove button */
+button[onclick="clearImage()"] {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: fit-content;
+    transition: 0.2s;
+}
+
+/* Hover effect */
+button[onclick="clearImage()"]:hover {
+    background: #dc2626;
+}
+
+/* Optional: align nicely if inside form grid */
+.form-group img {
+    display: block;
+}

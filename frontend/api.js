@@ -25,13 +25,24 @@ async function apiGet(action, params = {}) {
 }
 
 async function apiPost(action, data = {}) {
+    const isFormData = data instanceof FormData;
+
     const response = await fetch(apiUrl(action), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        headers: isFormData
+            ? {}
+            : { 'Content-Type': 'application/json' },
+        body: isFormData
+            ? data
+            : JSON.stringify(data)
     });
+
     const payload = await parseApiResponse(response);
-    if (!payload.success) throw new Error(payload.message || 'Request failed');
+
+    if (!payload.success) {
+        throw new Error(payload.message || 'Request failed');
+    }
+
     return payload;
 }
 

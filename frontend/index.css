@@ -358,3 +358,9 @@ body {
     background: #fee2e2;
     color: #b91c1c;
 }
+
+.table-card img.stock-thumbnail {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}

@@ -3,29 +3,54 @@
         <a href="#" class="btn-back" onclick="loadPage('stock/stock.html'); return false;">
             <i class="fa fa-arrow-left"></i> Back
         </a>
+
         <div class="page-header">
             <h2><i class="fa fa-warehouse"></i> Add Stock</h2>
-            <p>Increase the stock quantity for an existing product.</p>
+            <p>Add a new product stock record.</p>
         </div>
     </div>
 
     <div class="form-card">
         <div class="form-grid">
+
             <div class="form-group">
-                <label>Product</label>
-                <select id="product_id" onchange="previewCurrentStock()"></select>
+                <label for="stock_code">Stock Code</label>
+                <input type="text" id="stock_code" placeholder="Example: S001">
             </div>
+
             <div class="form-group">
-                <label>Current Quantity</label>
-                <input type="number" id="current_quantity" disabled>
+                <label for="name">Product Name</label>
+                <input type="text" id="name" placeholder="Enter product name">
             </div>
+
             <div class="form-group">
-                <label>Add Quantity</label>
-                <input type="number" id="add_quantity" min="1" value="1">
+                <label for="price">Buying Cost (RM)</label>
+                <input type="number" id="price" min="0" step="0.01" placeholder="0.00">
             </div>
+
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+
+            <div class="form-group">
+                <label for="supplier_id">Supplier</label>
+                <select id="supplier_id">
+                    <option value="">Select Supplier</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image_path">Thumbnail</label>
+                <input type="file" id="image_path" accept="image/*">
+            </div>
+
         </div>
+
         <div class="form-actions">
-            <button type="button" class="btn-save" onclick="saveStock()"><i class="fa fa-save"></i> Save Stock</button>
+            <button type="button" class="btn-save" onclick="saveStock()">
+                <i class="fa fa-save"></i> Save Stock
+            </button>
         </div>
     </div>
 </div>

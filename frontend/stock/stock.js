@@ -1,12 +1,17 @@
 window.loadStocks = async function loadStocks() {
     const table = document.getElementById('stockTable');
     const search = document.getElementById('searchInput')?.value || '';
+
     table.innerHTML = '<tr><td colspan="7">Loading stock...</td></tr>';
 
     try {
-        const { products } = await apiGet('list_products', { search });
+        const { stocks } = await apiGet('list_stock', { search });
+
         const supplier = document.getElementById('supplierFilter')?.value || '';
-        const filtered = supplier ? products.filter(p => p.supplier_name === supplier) : products;
+        const filtered = supplier
+            ? stocks.filter(s => s.supplier_name === supplier)
+            : stocks;
+
         await loadSupplierFilter(supplier);
 
         if (!filtered.length) {
@@ -15,9 +20,15 @@ window.loadStocks = async function loadStocks() {
         }
 
         table.innerHTML = filtered.map(stock => `
-            <tr onclick="openStockEditPage(${stock.product_id})" class="clickable-row">
-                <td><img src="${escapeHtml(stock.image_path)}" alt=""></td>
-                <td>${escapeHtml(stock.product_code)}</td>
+            <tr onclick="openStockEditPage(${stock.stock_id})" class="clickable-row">
+                <td>
+                    <img 
+                        src="../backend/${escapeHtml(stock.image_path)}"
+                        class="stock-thumbnail"
+                        onerror="this.onerror=null; this.src='../backend/assets/products/product-placeholder.jpg';"
+                    />
+                </td>
+                <td>${escapeHtml(stock.stock_code)}</td>
                 <td>${escapeHtml(stock.name)}</td>
                 <td>${money(stock.price)}</td>
                 <td>${stock.quantity}</td>
@@ -25,6 +36,7 @@ window.loadStocks = async function loadStocks() {
                 <td>${stockBadge(Number(stock.quantity))}</td>
             </tr>
         `).join('');
+
     } catch (error) {
         table.innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;
     }
