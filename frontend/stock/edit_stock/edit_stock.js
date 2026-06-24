@@ -1,79 +1,63 @@
-function getStockId() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id");
+window.currentStockProduct = null;
+
+function getStockEditId() {
+    const id = getCurrentPageParam('id');
+    return id || document.getElementById('product_id')?.value || '';
 }
 
-// MOCK DATA
-let stocks = [
-    {
-        thumbnail: "https://via.placeholder.com/40",
-        code: "P001",
-        name: "Wireless Mouse",
-        price: 35.00,
-        quantity: 50,
-        supplier: "Tech Supply Co"
-    },
-
-    {
-        thumbnail: "https://via.placeholder.com/40",
-        code: "P002",
-        name: "Mechanical Keyboard",
-        price: 120.00,
-        quantity: 8,
-        supplier: "Office Pro"
-    },
-
-    {
-        thumbnail: "https://via.placeholder.com/40",
-        code: "P003",
-        name: "27 Inch Monitor",
-        price: 699.00,
-        quantity: 0,
-        supplier: "Global Electronics"
-    },
-
-    {
-        thumbnail: "https://via.placeholder.com/40",
-        code: "P004",
-        name: "USB Hub",
-        price: 45.00,
-        quantity: 15,
-        supplier: "Tech Supply Co"
+window.loadStock = async function loadStock() {
+    const id = getStockEditId();
+    if (!id) {
+        alert('No product selected for stock update.');
+        loadPage('stock/stock.html');
+        return;
     }
-];
 
-function loadStock() {
-
-    let id = getStockId();
-
-    let stock = stocks.find(s => s.id == id);
-
-    if (stock) {
-
-        document.getElementById("stock_id").value = stock.id;
-        document.getElementById("stock_code").value = stock.code;
-        document.getElementById("stock_name").value = stock.name;
-        document.getElementById("stock_price").value = stock.price;
-        document.getElementById("stock_quantity").value = stock.quantity;
-        document.getElementById("stock_supplier").value = stock.supplier;
+    try {
+        const { product } = await apiGet('get_product', { id });
+        window.currentStockProduct = product;
+        document.getElementById('product_id').value = product.product_id;
+        document.getElementById('product_code').value = product.product_code;
+        document.getElementById('name').value = product.name;
+        document.getElementById('quantity').value = product.quantity;
+        setStockPreview();
+        document.getElementById('quantity').addEventListener('input', setStockPreview);
+    } catch (error) {
+        alert(error.message);
+        loadPage('stock/stock.html');
     }
-}
+};
 
-function updateStock() {
+window.setStockPreview = function setStockPreview() {
+    const quantity = Number(document.getElementById('quantity').value || 0);
+    document.getElementById('status_preview').value =
+        quantity === 0 ? 'Out of Stock' : quantity < 10 ? 'Low Stock' : 'Stock Available';
+};
 
-    alert("Stock updated successfully!");
+window.updateStock = async function updateStock() {
+    const productId = document.getElementById('product_id').value;
+    let product = window.currentStockProduct;
 
-    loadPage("stocks/stocks.html");
-}
+    try {
+        if (!product || String(product.product_id) !== String(productId)) {
+            const response = await apiGet('get_product', { id: productId });
+            product = response.product;
+        }
 
-function deleteStock() {
-
-    if (confirm("Are you sure you want to delete this stock?")) {
-
-        alert("Stock deleted successfully!");
-
-        loadPage("stocks/stocks.html");
+        await apiPost('save_product', {
+            product_id: product.product_id,
+            product_code: product.product_code,
+            name: product.name,
+            price: product.price,
+            quantity: document.getElementById('quantity').value,
+            supplier_id: product.supplier_id,
+            image_path: product.image_path,
+            status: product.status
+        });
+        loadPage('stock/stock.html');
+    } catch (error) {
+        alert(error.message);
     }
-}
+};
 
 loadStock();

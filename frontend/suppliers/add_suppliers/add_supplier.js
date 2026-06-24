@@ -1,18 +1,15 @@
-function saveSupplier() {
-
-    const name = document.getElementById("supplierName").value;
-    const email = document.getElementById("supplierEmail").value;
-    const phone = document.getElementById("supplierPhone").value;
-    const address = document.getElementById("supplierAddress").value;
-
-    if (!name || !email || !phone || !address) {
-        alert("Please fill in all required fields.");
-        return;
+async function saveSupplier() {
+    try {
+        await apiPost('save_supplier', {
+            supplier_code: document.getElementById('supplier_code').value,
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            logo_path: document.getElementById('logo_path').value || 'assets/supplier-placeholder.png'
+        });
+        loadPage('suppliers/suppliers.html');
+    } catch (error) {
+        alert(error.message);
     }
-
-    // Save logic here (LocalStorage / API / PHP)
-
-    alert("Supplier saved successfully!");
-
-    loadPage('suppliers/suppliers.html');
 }

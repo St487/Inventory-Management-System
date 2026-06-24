@@ -1,67 +1,43 @@
-function getSupplierId() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id");
-}
-
-// MOCK DATA (replace with PHP/API later)
-let suppliers = [
-    {
-        id: "S001",
-        name: "Tech Supply Co",
-        email: "tech@supplier.com",
-        phone: "0123456789",
-        address: "Kuala Lumpur",
-        logo: "https://via.placeholder.com/40"
-    },
-    {
-        id: "S002",
-        name: "Office Pro",
-        email: "office@pro.com",
-        phone: "0132233445",
-        address: "Johor Bahru",
-        logo: "https://via.placeholder.com/40"
-    },
-    {
-        id: "S003",
-        name: "Global Electronics",
-        email: "global@electronics.com",
-        phone: "0145566778",
-        address: "Penang",
-        logo: "https://via.placeholder.com/40"
-    }
-];
-
-function loadSupplier() {
-
-    let id = getSupplierId();
-
-    let supplier = suppliers.find(s => s.id == id);
-
-    if (supplier) {
-
-        document.getElementById("supplier_id").value = supplier.id;
-        document.getElementById("supplier_name").value = supplier.name;
-        document.getElementById("supplier_email").value = supplier.email;
-        document.getElementById("supplier_phone").value = supplier.phone;
-        document.getElementById("supplier_address").value = supplier.address;
-
+async function loadSupplier() {
+    try {
+        const { supplier } = await apiGet('get_supplier', { id: getCurrentPageParam('id') });
+        document.getElementById('supplier_id').value = supplier.supplier_id;
+        document.getElementById('supplier_code').value = supplier.supplier_code;
+        document.getElementById('name').value = supplier.name;
+        document.getElementById('email').value = supplier.email;
+        document.getElementById('phone').value = supplier.phone;
+        document.getElementById('address').value = supplier.address;
+        document.getElementById('logo_path').value = supplier.logo_path;
+    } catch (error) {
+        alert(error.message);
+        loadPage('suppliers/suppliers.html');
     }
 }
 
-function updateSupplier() {
-
-    alert("Supplier updated successfully!");
-
-    loadPage("suppliers/suppliers.html");
+async function updateSupplier() {
+    try {
+        await apiPost('save_supplier', {
+            supplier_id: document.getElementById('supplier_id').value,
+            supplier_code: document.getElementById('supplier_code').value,
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            logo_path: document.getElementById('logo_path').value
+        });
+        loadPage('suppliers/suppliers.html');
+    } catch (error) {
+        alert(error.message);
+    }
 }
 
-function deleteSupplier() {
-
-    if (confirm("Are you sure you want to delete this supplier?")) {
-
-        alert("Supplier deleted successfully!");
-
-        loadPage("suppliers/suppliers.html");
+async function deleteSupplier() {
+    if (!confirm('Delete this supplier? Products linked to it must be moved first.')) return;
+    try {
+        await apiPost('delete_supplier', { supplier_id: document.getElementById('supplier_id').value });
+        loadPage('suppliers/suppliers.html');
+    } catch (error) {
+        alert(error.message);
     }
 }
 

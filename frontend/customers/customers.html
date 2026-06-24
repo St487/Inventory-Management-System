@@ -11,6 +11,42 @@
 <body onload="loadCustomers()">
 
 <div class="customer-container">
+    <div class="action-top-row">
+        <h5 class="header-title-block">
+            <span class="title">Customer Management</span>
+        </h5>
+        <button class="btn-primary" onclick="toggleCustomerForm()">
+            <i class="fa fa-plus"></i> Add Customer
+        </button>
+    </div>
+
+    <div class="form-card" id="customerFormBox" style="display:none;margin-bottom:18px;">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="name">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email">
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="phone">
+            </div>
+            <div class="form-group">
+                <label>VIP Status</label>
+                <select id="vip_status">
+                    <option>Normal</option>
+                    <option>Silver</option>
+                    <option>Gold</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn-save" onclick="saveCustomer()"><i class="fa fa-save"></i> Save Customer</button>
+        </div>
+    </div>
 
 
     <!-- FILTER ROW (same structure as products) -->
@@ -25,7 +61,7 @@
                        placeholder="Search name, email, phone...">
             </div>
 
-            <select id="vipFilter" onchange="applyFilter()" class="filter-select">
+            <select id="vipFilter" onchange="loadCustomers()" class="filter-select">
                 <option value="">All VIP status</option>
                 <option value="Gold">Gold</option>
                 <option value="Silver">Silver</option>

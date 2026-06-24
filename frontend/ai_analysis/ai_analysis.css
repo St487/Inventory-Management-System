@@ -1,0 +1,35 @@
+.analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.analysis-header h2 {
+    font-size: 1.35rem;
+}
+
+.insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.insight-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px;
+    min-height: 120px;
+}
+
+.insight-card i {
+    color: #3b82f6;
+    margin-bottom: 10px;
+}
+
+.insight-card p {
+    color: #334155;
+    line-height: 1.5;
+}

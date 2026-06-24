@@ -7,6 +7,15 @@
 
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="form.css">
+    <link rel="stylesheet" href="dashboard/dashboard.css">
+    <link rel="stylesheet" href="products/products.css">
+    <link rel="stylesheet" href="stock/stock.css">
+    <link rel="stylesheet" href="customers/customers.css">
+    <link rel="stylesheet" href="suppliers/suppliers.css">
+    <link rel="stylesheet" href="orders/orders.css">
+    <link rel="stylesheet" href="payments/payments.css">
+    <link rel="stylesheet" href="transaction/transaction.css">
+    <link rel="stylesheet" href="ai_analysis/ai_analysis.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +52,7 @@
              <li class="menu-divider">Business Operations</li>
             <li class="menu-item" data-page="orders/orders.html" onclick="loadPage('orders/orders.html')"><i class="fa fa-shopping-cart"></i> <span>Orders</span></li>
             <li class="menu-item" data-page="payments/payments.html" onclick="loadPage('payments/payments.html')"><i class="fa fa-credit-card"></i> <span>Payments</span></li>
-            <li class="menu-item" data-page="transactions/transactions.html" onclick="loadPage('transactions/transactions.html')"><i class="fa fa-receipt"></i> <span>Transactions</span></li>
+            <li class="menu-item" data-page="transaction/transaction.html" onclick="loadPage('transaction/transaction.html')"><i class="fa fa-receipt"></i> <span>Transactions</span></li>
         </ul>
     </div>
 
@@ -69,6 +78,8 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="api.js"></script>
 <script src="index.js"></script>
 </body>
 </html>

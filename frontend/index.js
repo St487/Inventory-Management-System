@@ -13,7 +13,7 @@ const pageTitles = {
     'ai_analysis/ai_analysis.html': 'AI Analysis',
     'orders/orders.html': 'Orders Overview',
     'payments/payments.html': 'Payments Overview',
-    'transactions/transactions.html': 'Transaction History'
+    'transaction/transaction.html': 'Transaction History'
 };
 
 function loadPage(page) {
@@ -39,7 +39,7 @@ function loadPage(page) {
         topbarTitle.textContent = pageTitles[route] || 'Page Overview';
     }
 
-    fetch(page)
+    fetch(page, { cache: 'no-store' })
     .then(response => response.text())
     .then(data => {
         document.getElementById('content').innerHTML = data;
@@ -70,12 +70,29 @@ function loadPage(page) {
             scriptSrc = 'suppliers/edit_suppliers/edit_supplier.js';
         } else if (page.includes('suppliers')) {
             scriptSrc = 'suppliers/suppliers.js';
+        } else if (page.includes('dashboard')) {
+            scriptSrc = 'dashboard/dashboard.js';
+        } else if (page.includes('orders')) {
+            scriptSrc = 'orders/orders.js';
+        } else if (page.includes('payments')) {
+            scriptSrc = 'payments/payments.js';
+        } else if (page.includes('transaction')) {
+            scriptSrc = 'transaction/transaction.js';
+        } else if (page.includes('ai_analysis')) {
+            scriptSrc = 'ai_analysis/ai_analysis.js';
         }
 
         if (scriptSrc) {
             let script = document.createElement('script');
             script.id = 'moduleScript';
-            script.src = scriptSrc;
+            script.src = `${scriptSrc}?v=${Date.now()}`;
+            script.onerror = () => {
+                document.getElementById('content').innerHTML =
+                    '<div style="text-align:center;padding:40px;color:#ef4444;">' +
+                    '<h3>Module script failed to load</h3>' +
+                    '<p>Please check this path: ' + scriptSrc + '</p>' +
+                    '</div>';
+            };
             document.body.appendChild(script);
         }
     })

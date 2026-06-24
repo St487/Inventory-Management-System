@@ -1,84 +1,42 @@
-window.suppliers = window.suppliers || [
-    {
-        id: "S001",
-        name: "Tech Supply Co",
-        email: "tech@supplier.com",
-        phone: "0123456789",
-        address: "Kuala Lumpur",
-        logo: "https://via.placeholder.com/40"
-    },
-    {
-        id: "S002",
-        name: "Office Pro",
-        email: "office@pro.com",
-        phone: "0132233445",
-        address: "Johor Bahru",
-        logo: "https://via.placeholder.com/40"
-    },
-    {
-        id: "S003",
-        name: "Global Electronics",
-        email: "global@electronics.com",
-        phone: "0145566778",
-        address: "Penang",
-        logo: "https://via.placeholder.com/40"
-    }
-];
+async function loadSuppliers() {
+    const table = document.getElementById('supplierTable');
+    const search = document.getElementById('searchInput')?.value || '';
+    table.innerHTML = '<tr><td colspan="6">Loading suppliers...</td></tr>';
 
-// LOAD TABLE
-function loadSuppliers(data = suppliers) {
+    try {
+        const { suppliers } = await apiGet('list_suppliers', { search });
+        if (!suppliers.length) {
+            table.innerHTML = '<tr><td colspan="6">No suppliers found.</td></tr>';
+            return;
+        }
 
-    let table = document.getElementById("supplierTable");
-    table.innerHTML = "";
-
-    data.forEach(s => {
-
-        let statusClass = s.status === "Active"
-            ? "status-active"
-            : "status-inactive";
-
-        table.innerHTML += `
-            <tr onclick="openEditPage('${s.id}')" class="clickable-row">
-            
-                <td><img src="${s.logo}" class="supplier-logo"></td>
-                <td>${s.id}</td>
-                <td>${s.name}</td>
-                <td>${s.email}</td>
-                <td>${s.phone}</td>
-                <td>${s.address}</td>
+        table.innerHTML = suppliers.map(s => `
+            <tr onclick="openEditPage(${s.supplier_id})" class="clickable-row">
+                <td><img src="${escapeHtml(s.logo_path)}" class="supplier-logo" alt=""></td>
+                <td>${escapeHtml(s.supplier_code)}</td>
+                <td>${escapeHtml(s.name)}</td>
+                <td>${escapeHtml(s.email)}</td>
+                <td>${escapeHtml(s.phone)}</td>
+                <td>${escapeHtml(s.address)}</td>
             </tr>
-        `;
-    });
+        `).join('');
+    } catch (error) {
+        table.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+    }
 }
 
-// SEARCH
 function searchSupplier() {
-
-    let keyword = document.getElementById("searchInput").value.toLowerCase();
-
-    let filtered = suppliers.filter(s =>
-        s.name.toLowerCase().includes(keyword) ||
-        s.email.toLowerCase().includes(keyword) ||
-        s.phone.includes(keyword)
-    );
-
-    loadSuppliers(filtered);
-}
-
-// CLEAR
-function clearSearch() {
-    document.getElementById("searchInput").value = "";
     loadSuppliers();
 }
 
-if (typeof loadSuppliers === 'function') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadSuppliers);
-    } else {
-        loadSuppliers();
-    }
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    loadSuppliers();
 }
 
 function openEditPage(id) {
     loadPage(`suppliers/edit_suppliers/edit_supplier.html?id=${id}`);
 }
+
+loadSuppliers();
+showFlash();

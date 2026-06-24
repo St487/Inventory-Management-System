@@ -39,11 +39,11 @@
                     placeholder="Search name, code...">
             </div>
 
-            <select id="statusFilter" onchange="applyFilters()" class="filter-select">
+            <select id="statusFilter" onchange="loadProducts()" class="filter-select">
                 <option value="">All Status</option>
-                <option value="high stock">Stock Available</option>
-                <option value="low stock">Low Stock</option>
-                <option value="out of stock">Out of Stock</option>
+                <option value="available">Stock Available</option>
+                <option value="low">Low Stock</option>
+                <option value="out">Out of Stock</option>
             </select>
 
             <button class="btn-secondary" onclick="clearFilters()">
@@ -66,6 +66,7 @@
                     <th>Price (RM)</th>
                     <th>Quantity</th>
                     <th>Stock</th>
+                    <th>Supplier</th>
                     <th>Status</th>
                 </tr>
             </thead>

@@ -1,0 +1,11 @@
+AI tool used during development:
+
+- ChatGPT / Codex
+
+AI assistance summary:
+
+- Interpreted the assignment PDF requirements.
+- Completed the PHP/MySQL/PDO backend.
+- Connected the existing frontend pages to database-backed API endpoints.
+- Added dashboard, chart, order calculation, session messages, and AI-assisted business analysis.
+- Added setup and presentation guidance for the project submission.

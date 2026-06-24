@@ -1,68 +1,68 @@
-window.customers = window.customers || [
-    { id: 1, name: "Ali", email: "ali@gmail.com", phone: "0123456789", vip: "Gold", created_at: "2023-01-01" },
-    { id: 2, name: "Siti", email: "siti@gmail.com", phone: "0132233445", vip: "Silver", created_at: "2023-01-02" },
-    { id: 3, name: "John", email: "john@gmail.com", phone: "0145566778", vip: "Normal", created_at: "2023-01-03" }
-];
+async function loadCustomers() {
+    const table = document.getElementById('customerTable');
+    const search = document.getElementById('searchInput')?.value || '';
+    const vip = document.getElementById('vipFilter')?.value || '';
+    table.innerHTML = '<tr><td colspan="6">Loading customers...</td></tr>';
 
-// LOAD TABLE
-function loadCustomers(data = customers) {
+    try {
+        const { customers } = await apiGet('list_customers', { search, vip });
+        if (!customers.length) {
+            table.innerHTML = '<tr><td colspan="6">No customers found.</td></tr>';
+            return;
+        }
 
-    let table = document.getElementById("customerTable");
-    table.innerHTML = "";
-
-    data.forEach(c => {
-
-        let vipClass = "";
-        if (c.vip === "Gold") vipClass = "vip-gold";
-        else if (c.vip === "Silver") vipClass = "vip-silver";
-        else vipClass = "vip-normal";
-
-        table.innerHTML += `
-            <tr>
-                <td>${c.id}</td>
-                <td>${c.name}</td>
-                <td>${c.email}</td>
-                <td>${c.phone}</td>
-                <td><span class="${vipClass}">${c.vip}</span></td>
-                <td>${c.created_at}</td>
-            </tr>
-        `;
-    });
-}
-
-// TOGGLE FORM
-function toggleForm() {
-    let form = document.getElementById("formBox");
-    form.style.display = (form.style.display === "block") ? "none" : "block";
-}
-
-// SEARCH
-function searchCustomer() {
-    let keyword = document.getElementById("searchInput").value.toLowerCase();
-
-    let filtered = customers.filter(c =>
-        c.name.toLowerCase().includes(keyword) ||
-        c.email.toLowerCase().includes(keyword) ||
-        c.phone.includes(keyword)
-    );
-
-    loadCustomers(filtered);
-}
-
-// CLEAR FORM
-function clearForm() {
-    document.getElementById("customer_id").value = "";
-    document.getElementById("name").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("phone").value = "";
-    document.getElementById("vip").value = "";
-}
-
-// Ensure table is loaded when this script is (re)inserted dynamically
-if (typeof loadCustomers === 'function') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadCustomers);
-    } else {
-        loadCustomers();
+        table.innerHTML = customers.map(c => {
+            const vipClass = c.vip_status === 'Gold' ? 'vip-gold' : c.vip_status === 'Silver' ? 'vip-silver' : 'vip-normal';
+            return `
+                <tr>
+                    <td>${c.customer_id}</td>
+                    <td>${escapeHtml(c.name)}</td>
+                    <td>${escapeHtml(c.email)}</td>
+                    <td>${escapeHtml(c.phone)}</td>
+                    <td><span class="${vipClass}">${escapeHtml(c.vip_status)}</span></td>
+                    <td>${escapeHtml(c.created_at)}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        table.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
     }
 }
+
+function toggleCustomerForm() {
+    const box = document.getElementById('customerFormBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveCustomer() {
+    try {
+        await apiPost('save_customer', {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            vip_status: document.getElementById('vip_status').value
+        });
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('vip_status').value = 'Normal';
+        document.getElementById('customerFormBox').style.display = 'none';
+        loadCustomers();
+        showFlash();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function searchCustomer() {
+    loadCustomers();
+}
+
+function clearFilter() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('vipFilter').value = '';
+    loadCustomers();
+}
+
+loadCustomers();
+showFlash();
