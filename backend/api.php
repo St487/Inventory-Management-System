@@ -28,7 +28,6 @@ try {
         case 'delete_order': deleteOrder($data); break;
         case 'dashboard': dashboard(); break;
         case 'transactions': transactions(); break;
-        case 'payments': payments(); break;
         case 'analysis': analysis(); break;
         case 'flash': flash(); break;
         default: fail('Unknown API action: ' . $action, 404);
@@ -892,14 +891,6 @@ function transactions()
         JOIN products p ON p.product_id = o.product_id
         ORDER BY o.order_id DESC');
     ok(['transactions' => $stmt->fetchAll()]);
-}
-
-function payments()
-{
-    $stmt = pdo()->query("SELECT order_no, total, payment_status, created_at,
-        CASE WHEN payment_status = 'Unpaid' THEN 'Payment pending - follow up required' ELSE 'Payment received' END AS note
-        FROM orders ORDER BY order_id DESC");
-    ok(['payments' => $stmt->fetchAll()]);
 }
 
 function analysis()
