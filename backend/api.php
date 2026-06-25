@@ -870,6 +870,16 @@ function dashboard()
 
         'total_sales' => money(floatval($pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Paid'")->fetchColumn())),
 
+        'total_profit' => money(floatval($pdo->query("
+            SELECT COALESCE(SUM(
+                o.total - (s.price * o.quantity)
+            ),0)
+            FROM orders o
+            JOIN products p ON p.product_id = o.product_id
+            JOIN stock s ON s.stock_id = p.stock_id
+            WHERE o.payment_status = 'Paid'
+        ")->fetchColumn())),
+
         'low_stock' => intval($pdo->query('SELECT COUNT(*) FROM stock WHERE quantity > 0 AND quantity < 10')->fetchColumn()),
 
         'last_order_no' => $_SESSION['last_order_no'] ?? ''

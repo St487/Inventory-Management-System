@@ -12,6 +12,7 @@ window.loadDashboard = async function loadDashboard() {
 
         cards.innerHTML = `
             ${dashboardCard('Total Sales', `RM ${money(summary.total_sales)}`, 'fa-chart-line')}
+            ${dashboardCard('Total Profit', `RM ${summary.total_profit}`, 'fa-coins')}
             ${dashboardCard('Products', summary.total_products, 'fa-box')}
             ${dashboardCard('Customers', summary.total_customers, 'fa-users')}
             ${dashboardCard('Orders', summary.total_orders, 'fa-shopping-cart')}
