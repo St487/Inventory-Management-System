@@ -626,21 +626,27 @@ function deleteCustomer($data)
 function listOrders()
 {
     $search = rememberSearch('order_search');
+    $payment = trim($_GET['payment'] ?? '');
 
-    $sql = '
-        SELECT o.*, c.name AS customer_name, p.name AS product_name, p.product_code
+    $sql = 'SELECT o.*, c.name AS customer_name, p.name AS product_name, p.product_code
         FROM orders o
         JOIN customers c ON c.customer_id = o.customer_id
         JOIN products p ON p.product_id = o.product_id
         WHERE (o.order_no LIKE :search 
             OR c.name LIKE :search 
-            OR p.name LIKE :search)
-        AND p.status = "active"
-        ORDER BY o.order_id DESC
-    ';
+            OR p.name LIKE :search)';
+
+    $params = ['search' => '%' . $search . '%'];
+
+    if ($payment === 'Paid' || $payment === 'Unpaid') {
+        $sql .= ' AND o.payment_status = :payment';
+        $params['payment'] = $payment;
+    }
+
+    $sql .= ' ORDER BY o.order_id DESC';
 
     $stmt = pdo()->prepare($sql);
-    $stmt->execute(['search' => '%' . $search . '%']);
+    $stmt->execute($params);
 
     ok(['orders' => $stmt->fetchAll()]);
 }

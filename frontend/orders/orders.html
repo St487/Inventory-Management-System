@@ -33,11 +33,24 @@
 
     <div class="header-action-row">
         <div class="search-and-create-bar">
+
             <div class="search-wrapper">
                 <i class="fa fa-search search-icon"></i>
-                <input type="text" id="searchInput" onkeyup="loadOrders()" placeholder="Search order, customer, product...">
+                <input type="text" id="searchInput"
+                    onkeyup="loadOrders()"
+                    placeholder="Search order, customer, product...">
             </div>
+
+            <select id="statusFilter"
+                    onchange="loadOrders()"
+                    class="filter-select">
+                <option value="">All Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
+            </select>
+
             <button class="btn-secondary" onclick="clearOrderSearch()">Clear</button>
+
         </div>
     </div>
 

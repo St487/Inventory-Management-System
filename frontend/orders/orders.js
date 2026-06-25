@@ -102,28 +102,6 @@ window.createOrder = async function createOrder() {
     }
 };
 
-window.loadOrders = async function loadOrders() {
-    const search = document.getElementById('searchInput')?.value || '';
-    const table = document.getElementById('orderTable');
-
-    try {
-        const { orders } = await apiGet('list_orders', { search });
-        table.innerHTML = orders.length ? orders.map(o => `
-            <tr>
-                <td>${escapeHtml(o.order_no)}</td>
-                <td>${escapeHtml(o.customer_name)}</td>
-                <td>${escapeHtml(o.product_name)}</td>
-                <td>${o.quantity}</td>
-                <td>RM ${money(o.total)}</td>
-                <td><span class="${o.payment_status === 'Unpaid' ? 'stock-out' : 'stock-ok'}">${escapeHtml(o.payment_status)}</span></td>
-                <td><button class="btn-secondary" onclick="deleteOrder(${o.order_id})">Delete</button></td>
-            </tr>
-        `).join('') : '<tr><td colspan="7">No orders found.</td></tr>';
-    } catch (error) {
-        table.innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;
-    }
-};
-
 window.deleteOrder = async function deleteOrder(id) {
     if (!confirm('Delete this order?')) return;
     try {
@@ -137,6 +115,40 @@ window.deleteOrder = async function deleteOrder(id) {
 window.clearOrderSearch = function clearOrderSearch() {
     document.getElementById('searchInput').value = '';
     loadOrders();
+};
+
+window.loadOrders = async function loadOrders() {
+    const search = document.getElementById('searchInput')?.value || '';
+    const payment = document.getElementById('statusFilter')?.value || '';
+    const table = document.getElementById('orderTable');
+
+    try {
+        const { orders } = await apiGet('list_orders', {
+            search,
+            payment
+        });
+
+        table.innerHTML = orders.length ? orders.map(o => `
+            <tr>
+                <td>${escapeHtml(o.order_no)}</td>
+                <td>${escapeHtml(o.customer_name)}</td>
+                <td>${escapeHtml(o.product_name)}</td>
+                <td>${o.quantity}</td>
+                <td>RM ${money(o.total)}</td>
+                <td>
+                    <span class="${o.payment_status === 'Unpaid' ? 'stock-out' : 'stock-ok'}">
+                        ${escapeHtml(o.payment_status)}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-secondary" onclick="deleteOrder(${o.order_id})">Delete</button>
+                </td>
+            </tr>
+        `).join('') : '<tr><td colspan="7">No orders found.</td></tr>';
+
+    } catch (error) {
+        table.innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;
+    }
 };
 
 initOrders();
