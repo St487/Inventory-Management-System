@@ -626,14 +626,22 @@ function deleteCustomer($data)
 function listOrders()
 {
     $search = rememberSearch('order_search');
-    $sql = 'SELECT o.*, c.name AS customer_name, p.name AS product_name, p.product_code
+
+    $sql = '
+        SELECT o.*, c.name AS customer_name, p.name AS product_name, p.product_code
         FROM orders o
         JOIN customers c ON c.customer_id = o.customer_id
         JOIN products p ON p.product_id = o.product_id
-        WHERE o.order_no LIKE :search OR c.name LIKE :search OR p.name LIKE :search
-        ORDER BY o.order_id DESC';
+        WHERE (o.order_no LIKE :search 
+            OR c.name LIKE :search 
+            OR p.name LIKE :search)
+        AND p.status = "active"
+        ORDER BY o.order_id DESC
+    ';
+
     $stmt = pdo()->prepare($sql);
     $stmt->execute(['search' => '%' . $search . '%']);
+
     ok(['orders' => $stmt->fetchAll()]);
 }
 
@@ -653,37 +661,52 @@ function createOrder($data)
     try {
         $pdo->beginTransaction();
 
-        // GET PRODUCT + STOCK
+        // 1. GET PRODUCT + STOCK (LOCKED)
         $stmt = $pdo->prepare("
-            SELECT p.*, s.stock_id, s.quantity AS stock_qty, s.price
+            SELECT 
+                p.product_id,
+                p.stock_id,
+                p.price AS product_price,
+                p.quantity AS product_qty,
+                s.quantity AS stock_qty
             FROM products p
             JOIN stock s ON s.stock_id = p.stock_id
             WHERE p.product_id = :id
             FOR UPDATE
         ");
         $stmt->execute(['id' => $productId]);
-        $dataRow = $stmt->fetch();
+        $row = $stmt->fetch();
 
-        if (!$dataRow) throw new Exception('Product not found.');
+        if (!$row) {
+            throw new Exception('Product not found.');
+        }
 
-        if ($dataRow['stock_qty'] < $quantity) {
+        // 2. VALIDATE STOCK
+        if ($row['stock_qty'] < $quantity) {
             throw new Exception('Not enough stock.');
         }
 
-        $price = $dataRow['price'];
+        // 3. PRICE LOGIC (PRODUCT PRICE ONLY)
+        $price = floatval($row['product_price']);
 
         $subtotal = $price * $quantity;
-        $discount = $subtotal > 500 ? $subtotal * 0.10 : 0;
-        $tax = ($subtotal - $discount) * 0.06;
-        $total = $subtotal - $discount + $tax;
 
+        // discount only if subtotal > 500
+        $discount = ($subtotal > 500) ? $subtotal * 0.10 : 0;
+
+        // tax = (subtotal - discount) * 6%
+        $tax = ($subtotal - $discount) * 0.06;
+
+        $total = ($subtotal - $discount) + $tax;
+
+        // 4. ORDER NUMBER
         $orderNo = 'ORD' . date('YmdHis') . rand(10, 99);
 
-        // INSERT ORDER
+        // 5. INSERT ORDER
         $stmt = $pdo->prepare("
-            INSERT INTO orders 
+            INSERT INTO orders
             (order_no, customer_id, product_id, quantity, subtotal, discount, tax, total, payment_status)
-            VALUES 
+            VALUES
             (:order_no, :customer_id, :product_id, :quantity, :subtotal, :discount, :tax, :total, :payment_status)
         ");
 
@@ -699,24 +722,43 @@ function createOrder($data)
             'payment_status' => $paymentStatus
         ]);
 
-        // UPDATE STOCK (NOT PRODUCT)
+        // 6. UPDATE STOCK
         $stmt = $pdo->prepare("
             UPDATE stock 
-            SET quantity = quantity - :qty 
+            SET quantity = quantity - :qty
             WHERE stock_id = :stock_id
         ");
 
         $stmt->execute([
             'qty' => $quantity,
-            'stock_id' => $dataRow['stock_id']
+            'stock_id' => $row['stock_id']
         ]);
 
+        // 7. UPDATE PRODUCT QUANTITY (IMPORTANT FIX)
+        $stmt = $pdo->prepare("
+            UPDATE products 
+            SET quantity = quantity - :qty
+            WHERE product_id = :product_id
+        ");
+
+        $stmt->execute([
+            'qty' => $quantity,
+            'product_id' => $productId
+        ]);
+
+        // 8. COMMIT
         $pdo->commit();
 
         $_SESSION['last_order_no'] = $orderNo;
-        flashMessage("Order $orderNo created.");
+        flashMessage("Order $orderNo created successfully.");
 
-        ok(['order_no' => $orderNo, 'total' => $total]);
+        ok([
+            'order_no' => $orderNo,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'tax' => $tax,
+            'total' => $total
+        ]);
 
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
@@ -726,10 +768,87 @@ function createOrder($data)
 
 function deleteOrder($data)
 {
-    $stmt = pdo()->prepare('DELETE FROM orders WHERE order_id = :id');
-    $stmt->execute(['id' => intval(isset($data['order_id']) ? $data['order_id'] : 0)]);
-    flashMessage('Order deleted successfully.');
-    ok();
+    $pdo = pdo();
+
+    $orderId = intval($data['order_id'] ?? 0);
+
+    if ($orderId <= 0) {
+        fail('Invalid order ID.');
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        // 1. GET ORDER DETAILS
+        $stmt = $pdo->prepare("
+            SELECT product_id, quantity
+            FROM orders
+            WHERE order_id = :id
+            FOR UPDATE
+        ");
+        $stmt->execute(['id' => $orderId]);
+        $order = $stmt->fetch();
+
+        if (!$order) {
+            throw new Exception('Order not found.');
+        }
+
+        $productId = $order['product_id'];
+        $qty = intval($order['quantity']);
+
+        // 2. GET STOCK ID FROM PRODUCT
+        $stmt = $pdo->prepare("
+            SELECT stock_id 
+            FROM products 
+            WHERE product_id = :id
+        ");
+        $stmt->execute(['id' => $productId]);
+        $product = $stmt->fetch();
+
+        if (!$product) {
+            throw new Exception('Product not found.');
+        }
+
+        $stockId = $product['stock_id'];
+
+        // 3. RESTORE STOCK
+        $stmt = $pdo->prepare("
+            UPDATE stock 
+            SET quantity = quantity + :qty 
+            WHERE stock_id = :stock_id
+        ");
+        $stmt->execute([
+            'qty' => $qty,
+            'stock_id' => $stockId
+        ]);
+
+        // 4. RESTORE PRODUCT QUANTITY
+        $stmt = $pdo->prepare("
+            UPDATE products 
+            SET quantity = quantity + :qty 
+            WHERE product_id = :product_id
+        ");
+        $stmt->execute([
+            'qty' => $qty,
+            'product_id' => $productId
+        ]);
+
+        // 5. DELETE ORDER
+        $stmt = $pdo->prepare("
+            DELETE FROM orders 
+            WHERE order_id = :id
+        ");
+        $stmt->execute(['id' => $orderId]);
+
+        $pdo->commit();
+
+        flashMessage('Order deleted and stock restored successfully.');
+        ok();
+
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $e;
+    }
 }
 
 function dashboard()

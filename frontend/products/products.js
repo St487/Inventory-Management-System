@@ -54,4 +54,3 @@ function openEditPage(id) {
 }
 
 loadProducts();
-showFlash();

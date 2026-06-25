@@ -27,7 +27,6 @@ window.initOrders = async function initOrders() {
 
         previewOrder();
         loadOrders();
-        showFlash();
     } catch (error) {
         customerSelect.innerHTML = '<option value="">Failed to load customers</option>';
         productSelect.innerHTML = '<option value="">Failed to load products</option>';
@@ -50,7 +49,10 @@ window.previewOrder = function previewOrder() {
     const discount = subtotal > 500 ? subtotal * 0.10 : 0;
     const tax = (subtotal - discount) * 0.06;
     const total = subtotal - discount + tax;
-    const stockText = Number(product.quantity) === 0 ? 'Out of Stock' : Number(product.quantity) < 10 ? 'Low Stock' : 'Stock Available';
+    const stockText =
+        Number(product.quantity) === 0 ? 'Out of Stock'
+        : Number(product.quantity) < 10 ? 'Low Stock'
+        : 'Stock Available';
 
     box.innerHTML = `
         <strong>Calculation:</strong>
@@ -63,9 +65,25 @@ window.previewOrder = function previewOrder() {
 window.createOrder = async function createOrder() {
     const customerId = document.getElementById('customer_id').value;
     const productId = document.getElementById('product_id').value;
+    const qty = Number(document.getElementById('quantity').value || 1);
 
     if (!customerId || !productId) {
         alert('Please select both customer and product.');
+        return;
+    }
+
+    const product = window.orderProducts.find(
+        p => String(p.product_id) === String(productId)
+    );
+
+    if (!product) {
+        alert('Invalid product selected.');
+        return;
+    }
+
+    // 🔥 PRODUCT QUANTITY CHECK (NOT STOCK)
+    if (qty > Number(product.quantity)) {
+        alert(`Not enough product quantity available. Only ${product.quantity} left.`);
         return;
     }
 
@@ -73,10 +91,12 @@ window.createOrder = async function createOrder() {
         await apiPost('create_order', {
             customer_id: customerId,
             product_id: productId,
-            quantity: document.getElementById('quantity').value,
+            quantity: qty,
             payment_status: document.getElementById('payment_status').value
         });
+
         initOrders();
+        showFlash('Order created successfully.', 'success');
     } catch (error) {
         alert(error.message);
     }
