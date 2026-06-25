@@ -93,29 +93,129 @@ function getSupplier()
 
 function saveSupplier($data)
 {
+    $uploadFolder = __DIR__ . '/assets/suppliers/';
+
+    if (!is_dir($uploadFolder)) {
+        mkdir($uploadFolder, 0777, true);
+    }
+
+    $pdo = pdo();
+
+    // Default fallback
+$logoPath = 'assets/product-placeholder.png';
+
+$pdo = pdo();
+$existingLogo = null;
+
+// GET EXISTING LOGO IF EDIT MODE
+if (!empty($data['supplier_id'])) {
+    $stmt = $pdo->prepare("
+        SELECT logo_path 
+        FROM suppliers 
+        WHERE supplier_id = :supplier_id
+    ");
+
+    $stmt->execute([
+        'supplier_id' => intval($data['supplier_id'])
+    ]);
+
+    $existingLogo = $stmt->fetchColumn();
+
+    if (!empty($existingLogo)) {
+        $logoPath = $existingLogo;
+    }
+}
+
+// UPLOAD NEW LOGO (OVERRIDE OLD ONE ONLY IF NEW FILE EXISTS)
+if (isset($_FILES['logo_path']) && $_FILES['logo_path']['error'] === UPLOAD_ERR_OK) {
+
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+    $originalFileName = $_FILES['logo_path']['name'];
+    $fileExtension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
+
+    if (!in_array($fileExtension, $allowedExtensions)) {
+        fail('Only JPG, JPEG, PNG, and WEBP logo images are allowed.');
+    }
+
+    if ($_FILES['logo_path']['size'] > 2 * 1024 * 1024) {
+        fail('Supplier logo must not exceed 2MB.');
+    }
+
+    $uploadFolder = __DIR__ . '/assets/suppliers/';
+    if (!is_dir($uploadFolder)) {
+        mkdir($uploadFolder, 0777, true);
+    }
+
+    $newFileName = uniqid('supplier_', true) . '.' . $fileExtension;
+    $targetFile = $uploadFolder . $newFileName;
+
+    if (!move_uploaded_file($_FILES['logo_path']['tmp_name'], $targetFile)) {
+        fail('Failed to upload supplier logo.');
+    }
+
+    $logoPath = 'assets/suppliers/' . $newFileName;
+}
+
     $params = [
-        'supplier_code' => trim(isset($data['supplier_code']) ? $data['supplier_code'] : ''),
-        'name' => trim(isset($data['name']) ? $data['name'] : ''),
-        'email' => trim(isset($data['email']) ? $data['email'] : ''),
-        'phone' => trim(isset($data['phone']) ? $data['phone'] : ''),
-        'address' => trim(isset($data['address']) ? $data['address'] : ''),
-        'logo_path' => trim(isset($data['logo_path']) && $data['logo_path'] !== '' ? $data['logo_path'] : 'assets/product-placeholder.jpg')
+        'supplier_code' => trim($data['supplier_code'] ?? ''),
+        'name' => trim($data['name'] ?? ''),
+        'email' => trim($data['email'] ?? ''),
+        'phone' => trim($data['phone'] ?? ''),
+        'address' => trim($data['address'] ?? ''),
+        'logo_path' => $logoPath
     ];
 
-    if ($params['supplier_code'] === '' || $params['name'] === '' || $params['email'] === '') {
-        fail('Supplier code, name and email are required.');
+    if (
+        $params['supplier_code'] === '' ||
+        $params['name'] === '' ||
+        $params['email'] === '' ||
+        $params['phone'] === '' ||
+        $params['address'] === ''
+    ) {
+        fail('Supplier code, name, email, phone and address are required.');
+    }
+
+    if (!filter_var($params['email'], FILTER_VALIDATE_EMAIL)) {
+        fail('Please enter a valid email address.');
     }
 
     if (!empty($data['supplier_id'])) {
         $params['supplier_id'] = intval($data['supplier_id']);
-        $sql = 'UPDATE suppliers SET supplier_code=:supplier_code, name=:name, email=:email,
-            phone=:phone, address=:address, logo_path=:logo_path WHERE supplier_id=:supplier_id';
-        pdo()->prepare($sql)->execute($params);
+
+        $sql = "UPDATE suppliers SET
+                    supplier_code = :supplier_code,
+                    name = :name,
+                    email = :email,
+                    phone = :phone,
+                    address = :address,
+                    logo_path = :logo_path
+                WHERE supplier_id = :supplier_id";
+
+        $pdo->prepare($sql)->execute($params);
+
         flashMessage('Supplier updated successfully.');
     } else {
-        $sql = 'INSERT INTO suppliers (supplier_code, name, email, phone, address, logo_path)
-            VALUES (:supplier_code, :name, :email, :phone, :address, :logo_path)';
-        pdo()->prepare($sql)->execute($params);
+        $check = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM suppliers
+            WHERE supplier_code = :supplier_code
+        ");
+        $check->execute([
+            'supplier_code' => $params['supplier_code']
+        ]);
+
+        if ($check->fetchColumn() > 0) {
+            fail('Supplier code already exists.');
+        }
+
+        $sql = "INSERT INTO suppliers
+                    (supplier_code, name, email, phone, address, logo_path)
+                VALUES
+                    (:supplier_code, :name, :email, :phone, :address, :logo_path)";
+
+        $pdo->prepare($sql)->execute($params);
+
         flashMessage('Supplier added successfully.');
     }
 

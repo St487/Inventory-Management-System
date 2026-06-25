@@ -28,14 +28,28 @@
                 <label>Phone</label>
                 <input type="text" id="phone" required>
             </div>
-            <div class="form-group">
-                <label>Logo Path</label>
-                <input type="text" id="logo_path">
-            </div>
             <div class="form-group full-width">
                 <label>Address</label>
                 <textarea id="address" rows="3" required></textarea>
             </div>
+
+            <div class="image-upload-wrapper">
+            <label>Supplier Logo</label>
+
+            <img
+                id="thumbnail_preview"
+                src="../backend/assets/product-placeholder.png"
+                alt="Supplier logo preview"
+                class="supplier-logo-preview"
+            />
+
+            <input
+                type="file"
+                id="logo_path"
+                accept=".jpg,.jpeg,.png,.webp,image/*"
+                onchange="previewSupplierLogo()"
+            >
+        </div>
         </div>
         <div class="form-actions">
             <button type="button" class="btn-save" onclick="updateSupplier()"><i class="fa fa-save"></i> Update Supplier</button>

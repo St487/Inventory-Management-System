@@ -12,7 +12,14 @@ async function loadSuppliers() {
 
         table.innerHTML = suppliers.map(s => `
             <tr onclick="openEditPage(${s.supplier_id})" class="clickable-row">
-                <td><img src="${escapeHtml(s.logo_path)}" class="supplier-logo" alt=""></td>
+                <td>
+                    <img 
+                        src="../backend/${escapeHtml(s.logo_path)}"
+                        class="stock-thumbnail"
+                        alt="${escapeHtml(s.name)}"
+                        onerror="this.onerror=null; this.src='../backend/assets/product-placeholder.png';"
+                    />
+                </td>
                 <td>${escapeHtml(s.supplier_code)}</td>
                 <td>${escapeHtml(s.name)}</td>
                 <td>${escapeHtml(s.email)}</td>
