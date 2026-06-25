@@ -11,7 +11,6 @@ async function loadTransactions() {
             <td>RM ${money(t.discount)}</td>
             <td>RM ${money(t.tax)}</td>
             <td><strong>RM ${money(t.total)}</strong></td>
-            <td><span class="${t.payment_status === 'Unpaid' ? 'stock-out' : 'stock-ok'}">${escapeHtml(t.payment_status)}</span></td>
         </tr>
     `).join('') : '<tr><td colspan="9">No transactions yet.</td></tr>';
 }

@@ -894,12 +894,16 @@ function dashboard()
 
 function transactions()
 {
-    $stmt = pdo()->query('SELECT o.order_no, c.name AS customer_name, p.name AS product_name,
-        o.quantity, o.subtotal, o.discount, o.tax, o.total, o.payment_status, o.created_at
+    $stmt = pdo()->query("
+        SELECT o.order_no, c.name AS customer_name, p.name AS product_name,
+               o.quantity, o.subtotal, o.discount, o.tax, o.total, o.payment_status, o.created_at
         FROM orders o
         JOIN customers c ON c.customer_id = o.customer_id
         JOIN products p ON p.product_id = o.product_id
-        ORDER BY o.order_id DESC');
+        WHERE o.payment_status = 'Paid'
+        ORDER BY o.order_id DESC
+    ");
+
     ok(['transactions' => $stmt->fetchAll()]);
 }
 

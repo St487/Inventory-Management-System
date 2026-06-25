@@ -30,7 +30,7 @@ window.loadStocks = async function loadStocks() {
                 </td>
                 <td>${escapeHtml(stock.stock_code)}</td>
                 <td>${escapeHtml(stock.name)}</td>
-                <td>${money(stock.price)}</td>
+                <td>RM ${money(stock.price)}</td>
                 <td>${stock.quantity}</td>
                 <td>${escapeHtml(stock.supplier_name || '-')}</td>
                 <td>${stockBadge(Number(stock.quantity))}</td>
